@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--https://codepen.io/Metty/pen/NWpzexj-->
+<html>
+
+<head>
+   <base target="_top">
+   <?!= HtmlService.createHtmlOutputFromFile('stylesheet.html').getContent(); ?>
+</head>
+<div class="container">
+   <div class="text">
+      Groupe de pétanque
+
+   </div>
+   <form action="#">
+      <p>Si vous voulez être informé quand aura lieu la prochaine partie.</p>
+      <p>Merci de saisir votre numéro de télèphone mobile sans espace et caractères spéciaux.</p>
+      <div class="form-row">
+         <div class="input-data">
+            <input type="tel" id="phoneInput" pattern="\+33[0-9]{9}" required>
+            <div class="underline"></div>
+            <label for="">Télèphone mobile</label><i>ex: +33607060706</i>
+         </div>
+         <div class="input-data">
+            <input type="text" id="firstNameInput" required>
+            <div class="underline"></div>
+            <label for="">Prénom</label> <i>ex: Sylvain</i>
+         </div>
+      </div>
+      <div class="form-row">
+         <div class="input-data">
+            <input type="text" id="lastNameInput" required>
+            <div class="underline"></div>
+            <label for="">Nom</label> <i>ex: Dupiont</i>
+         </div>
+         <div class="input-data">
+            <input type="text" id="codeInput" autocomplete="street-address" required>
+            <div class="underline"></div>
+            <label for="">Code sécurité</label><i>Nom du village du terrain</i>
+         </div>
+      </div>
+      <div class="form-row">
+         <div class="input-data">
+            <div class="form-row submit-btn">
+               <div class="input-data">
+                  <div class="inner"></div>
+                  <input id="submitButton" type="submit" value="Inscription">
+               </div>
+               <div class="input-data">
+                  <div class="inner"></div>
+                  <input id="removeButton" type="submit" value="Désinscription">
+               </div>
+            </div>
+            <div class="form-popup" id="myForm" style="display:none">
+               <p>Votre demande a bien été prise en compte. Vous allez recevoir un SMS de confirmation.</p>
+            </div>
+   </form>
+</div>
+
+<!-- The form -->
+
+<script>
+
+   function clean() {
+      // Clear the `phoneInput` text box.
+      document.getElementById('phoneInput').value = '';
+      document.getElementById('firstNameInput').value = '';
+      document.getElementById('lastNameInput').value = '';
+      document.getElementById('codeInput').value = '';
+      document.getElementById("myForm").style.display = "block";
+   }
+   const phone_input = document.getElementById("phoneInput");
+
+   phone_input.addEventListener('input', () => {
+      phone_input.setCustomValidity('');
+      phone_input.checkValidity();
+   });
+
+   phone_input.addEventListener('invalid', () => {
+      if (phone_input.value === '') {
+         phone_input.setCustomValidity('Saisir un numéro de télèphone!');
+      } else {
+         phone_input.setCustomValidity('Saisir un numéro de télèphone: +33607060706');
+      }
+   });
+
+   document.getElementById('submitButton').addEventListener('click', function () {
+      // Get the value from the `phoneInput` text box.
+      var phoneNumber = document.getElementById('phoneInput').value;
+      var firstName = document.getElementById('firstNameInput').value;
+      var lastName = document.getElementById('lastNameInput').value;
+      var code = document.getElementById('codeInput').value.trim()
+      // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+      if (phoneNumber && code) {
+         google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber, firstName, lastName, code.trim());
+         clean();
+      }
+   });
+
+   document.getElementById('removeButton').addEventListener('click', function () {
+      // Get the value from the `phoneInput` text box.
+      var phoneNumber = document.getElementById('phoneInput').value;
+      var code = document.getElementById('codeInput').value
+      // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+      if (phoneNumber && code) {
+         google.script.run.userRemoved(phoneNumber, code.trim());
+         clean();
+      }
+   });
+</script>
+
+</html>

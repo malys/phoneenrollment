@@ -1,0 +1,11 @@
+{
+  "name": "phoneenrollment",
+  "version": "1.0.0",
+  "description": "phone enrollment for petanque",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "malys",
+  "license": "ISC"
+}
