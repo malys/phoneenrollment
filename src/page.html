@@ -16,19 +16,19 @@
       <p>Merci de saisir votre numéro de télèphone mobile sans espace et caractères spéciaux.</p>
       <div class="form-row">
          <div class="input-data">
-            <input type="tel" id="phoneInput" pattern="\+33[0-9]{9}" required>
+            <input type="tel" id="phoneInput" pattern="^\+33[0-9]{9}" required>
             <div class="underline"></div>
             <label for="">Télèphone mobile</label><i>ex: +33607060706</i>
          </div>
          <div class="input-data">
-            <input type="text" id="firstNameInput" required>
+            <input type="text" id="firstNameInput" pattern="^[a-zA-Z]{5,}$" required>
             <div class="underline"></div>
             <label for="">Prénom</label> <i>ex: Sylvain</i>
          </div>
       </div>
       <div class="form-row">
          <div class="input-data">
-            <input type="text" id="lastNameInput" required>
+            <input type="text" id="lastNameInput" pattern="^[a-zA-Z]{5,}$" required>
             <div class="underline"></div>
             <label for="">Nom</label> <i>ex: Dupiont</i>
          </div>
@@ -50,8 +50,11 @@
                   <input id="removeButton" type="submit" value="Désinscription">
                </div>
             </div>
-            <div class="form-popup" id="myForm" style="display:none">
+            <div class="form-popup" id="okForm" style="display:none">
                <p>Votre demande a bien été prise en compte. Vous allez recevoir un SMS de confirmation.</p>
+            </div>
+            <div class="form-popup" id="koForm" style="display:none">
+               <p>Le formulaire est invalide.</p>
             </div>
    </form>
 </div>
@@ -59,6 +62,20 @@
 <!-- The form -->
 
 <script>
+   const FIELDS = [
+      {
+         id: "phoneInput",
+         message: ['Saisir un numéro de télèphone!', 'Saisir un numéro de télèphone: +33607060706']
+      },
+      {
+         id: "firstNameInput",
+         message: ['Saisir un prénom', 'lettres uniquement et taille > 5']
+      },
+      {
+         id: "lastNameInput",
+         message: ['Saisir un nom', 'lettres uniquement et taille > 5']
+      },
+   ]
 
    function clean() {
       // Clear the `phoneInput` text box.
@@ -66,44 +83,63 @@
       document.getElementById('firstNameInput').value = '';
       document.getElementById('lastNameInput').value = '';
       document.getElementById('codeInput').value = '';
-      document.getElementById("myForm").style.display = "block";
+      document.getElementById("okForm").style.display = "block";
+      document.getElementById("koForm").style.display = "none";
    }
-   const phone_input = document.getElementById("phoneInput");
+   function validity() {
 
-   phone_input.addEventListener('input', () => {
-      phone_input.setCustomValidity('');
-      phone_input.checkValidity();
-   });
+      FIELDS.forEach(p => {
+         const input = document.getElementById(p.id);
 
-   phone_input.addEventListener('invalid', () => {
-      if (phone_input.value === '') {
-         phone_input.setCustomValidity('Saisir un numéro de télèphone!');
-      } else {
-         phone_input.setCustomValidity('Saisir un numéro de télèphone: +33607060706');
-      }
-   });
+         input.addEventListener('input', () => {
+            input.setCustomValidity('');
+            input.checkValidity();
+         });
+
+         input.addEventListener('invalid', () => {
+            if (input.value === '') {
+               input.setCustomValidity(p.message[0]);
+            } else {
+               input.setCustomValidity(p.message[1]);
+            }
+         });
+      })
+   }
+
+   validity()
 
    document.getElementById('submitButton').addEventListener('click', function () {
-      // Get the value from the `phoneInput` text box.
-      var phoneNumber = document.getElementById('phoneInput').value;
-      var firstName = document.getElementById('firstNameInput').value;
-      var lastName = document.getElementById('lastNameInput').value;
-      var code = document.getElementById('codeInput').value.trim()
-      // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
-      if (phoneNumber && code) {
-         google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber, firstName, lastName, code.trim());
-         clean();
+      if (FIELDS.map(m => document.getElementById(m.id).checkValidity()).every(e => e == true)) {
+         // Get the value from the `phoneInput` text box.
+         var phoneNumber = document.getElementById('phoneInput').value;
+         var firstName = document.getElementById('firstNameInput').value;
+         var lastName = document.getElementById('lastNameInput').value;
+         var code = document.getElementById('codeInput').value;
+         // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+         if (phoneNumber && phoneNumber.toString().startsWith('+33') && code) {
+            google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber.trim(), firstName.trim(), lastName.trim(), code.trim());
+            clean();
+         } else {
+            document.getElementById("koForm").style.display = "block";
+         }
       }
+
    });
 
    document.getElementById('removeButton').addEventListener('click', function () {
-      // Get the value from the `phoneInput` text box.
-      var phoneNumber = document.getElementById('phoneInput').value;
-      var code = document.getElementById('codeInput').value
-      // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
-      if (phoneNumber && code) {
-         google.script.run.userRemoved(phoneNumber, code.trim());
-         clean();
+
+      if (FIELDS.map(m => document.getElementById(m.id).checkValidity()).every(e => e == true)) {
+         // Get the value from the `phoneInput` text box.
+         // Get the value from the `phoneInput` text box.
+         var phoneNumber = document.getElementById('phoneInput').value;
+         var code = document.getElementById('codeInput').value
+         // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+         if (phoneNumber && code) {
+            google.script.run.userRemoved(phoneNumber.trim(), code.trim());
+            clean();
+         } else {
+            document.getElementById("koForm").style.display = "block";
+         }
       }
    });
 </script>

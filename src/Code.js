@@ -11,6 +11,7 @@ const PHONE_NUMBER_FROM = PropertiesService.getScriptProperties().getProperty('P
 const SHORT_URL = PropertiesService.getScriptProperties().getProperty('SHORT_URL');
 
 const STATUS_TO_VALIDATE = 0
+const STATUS_VALIDATE = 1
 
 // Import the GasCrypt library for encryption
 const gc = bmSimpleCrypto.GasCrypt;
@@ -61,37 +62,7 @@ function getMessage(secret, message) {
 }
 
 
-/**
- * Sends an HTTP POST request to a given URL with a payload and logs the response content if the response code is 200.
- */
-/*
-const makeHttpPostRequest = () => {
-  // Get the URL of the current script and append the secret parameter
-  const url = ScriptApp.getService().getUrl() + '?secret=' + SECRET;
 
-  // Create the payload object
-  const payload = {
-    message: 'test'
-  };
-
-  // Create the options object for the HTTP request
-  const options = {
-    method: 'POST',
-    followRedirects: true,
-    muteHttpExceptions: true,
-    payload: JSON.stringify(payload),
-  };
-
-  // Send the HTTP request and get the response
-  const response = UrlFetchApp.fetch(url, options);
-  Logger.log(response.getResponseCode());
-  // Check if the response code is 200
-  if (response.getResponseCode() == 200) {
-    // Log the response content
-    Logger.log(response.getContentText());
-  }
-};
-*/
 /**
  * Writes phone number, first name, and last name into a spreadsheet.
  *
@@ -110,7 +81,7 @@ function userClicked(phoneNumber, firstName = "test", lastName = "test", code) {
       // Check if the user already exists
       if (!getUser(phoneNumber)) {
         // Append a new row with the current date, phone number, first name, and last name
-        sheet.appendRow([new Date(), phoneNumber, firstName, lastName, STATUS_TO_VALIDATE]);
+        sheet.appendRow([new Date(), parseInt(phoneNumber), firstName, lastName, STATUS_VALIDATE]);
         // Send a notification
         sendNotification(`Adding ${phoneNumber} ${firstName} ${lastName}`);
         // Send an SMS to the user
@@ -168,7 +139,7 @@ function userRemoved(phone, code) {
  * Retrieves user data from a spreadsheet.
  * @returns {Array} - An array of user objects with phone numbers, first names, and last names.
  */
-function getUsers() {
+function getUsers(filter) {
   // Open the spreadsheet using its URL
   var spreadsheet = SpreadsheetApp.openByUrl(SHEET_URL);
 
@@ -184,24 +155,32 @@ function getUsers() {
   // Loop through each row starting from the second row
   for (var row = 1; row < values.length; row++) {
     // Extract the phone number, first name, and last name from the values
-    var phone = parseInt(values[row][1]);
-    var firstName = values[row][2];
-    var lastName = values[row][3];
-
+    let phone = parseInt(values[row][1]);
+    let firstName = values[row][2];
+    let lastName = values[row][3];
+    let status = values[row][4];
     // Create a user object and add it to the result array
     var user = {
       phone: phone,
       firstName: firstName,
-      lastName: lastName
+      lastName: lastName,
+      status: status
     };
     result.push(user);
   }
 
-  // Log the result array
-  Logger.log(result);
+
 
   // Return the result array
-  return result;
+  if (!filter) {
+    Logger.log(result);
+    return result;
+  } else {
+    result = result.filter(f => parseInt(f.status) === parseInt(filter));
+    Logger.log(result);
+    return
+  }
+
 }
 
 /**
@@ -223,13 +202,13 @@ function getUser(mobile) {
  */
 function sendSmsToAll(message) {
   // Get the list of users from the Google Sheet
-  let users = getUsers();
+  let users = getUsers(1);
 
   // Iterate over each user and send them a text message
   users.forEach(user => sendSms(user.phone, message));
 
   // Send a notification indicating that the message has been sent to all users
-  sendNotification(`Message sent to all users: ${message}`);
+  sendNotification(`Message sent : ${message} to ${users.map(m => m.firstName).join(' ')}`);
 }
 
 /**
