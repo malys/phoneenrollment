@@ -292,3 +292,7 @@ function checkCode(code, secret) {
     return false
   }
 }
+
+function getCss(){
+  return HtmlService.createHtmlOutputFromFile("stylesheet.html").getContent();
+}
