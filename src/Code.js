@@ -37,13 +37,25 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
   else if (e && e.parameters && e.parameters.secret && e.parameters.message) {
-    return ContentService.createTextOutput(getMessage(e.parameters.secret, decodeURI(e.parameters.message)))
-      .setMimeType(ContentService.MimeType.JSON);
+    let message = getMessage(e.parameters.secret, convert(e.parameters.message))
+    return ContentService.createTextOutput(message).setMimeType(ContentService.MimeType.JSON);
   }
   else {
     // Render the 'page.html' template
     return HtmlService.createTemplateFromFile('page.html').evaluate();
   }
+}
+
+/**
+ * Converts a base64 string to its original data.
+ *
+ * @param {string} base64 - The base64 string to be converted.
+ * @return {string} - The original data as a string.
+ */
+function convert(base64) {
+  let result = Utilities.newBlob(Utilities.base64Decode(base64)).getDataAsString()
+  Logger.log(result)
+  return result
 }
 
 /**
@@ -55,7 +67,7 @@ function doGet(e) {
 function getMessage(secret, message) {
   if (checkCode(secret, SECRET) && message.length > 5) {
     sendSmsToAll(message)
-    return JSON.stringify({ result: 'OK' });
+    return JSON.stringify({ result: 'OK', message: message });
   } else {
     return JSON.stringify({ error: '400', message: message, secret: secret });
   }
@@ -178,7 +190,7 @@ function getUsers(filter) {
   } else {
     result = result.filter(f => parseInt(f.status) === parseInt(filter));
     Logger.log(result);
-    return
+    return result
   }
 
 }
@@ -225,7 +237,7 @@ function sendSms(phoneNumber, message) {
         "from": formatPhoneNumber(PHONE_NUMBER_FROM),
         "to": formatPhoneNumber(phoneNumber)
       }
-      UrlFetchApp.fetch(HTTPSMS_URL, {
+      let response = UrlFetchApp.fetch(HTTPSMS_URL, {
         method: 'post',
         headers: {
           "Accept": 'application/json',
@@ -234,7 +246,8 @@ function sendSms(phoneNumber, message) {
         },
         payload: JSON.stringify(payload)
       });
-      Logger.log(`${message} sent to ${phoneNumber}:  ${new Date()}`)
+
+      Logger.log(`${message} sent to ${phoneNumber} ${response.getContentText()}:  ${new Date()}`)
       return true;
     } catch (err) {
       Logger.log(`${message} not sent to ${phoneNumber}:  ${err} ${payload}`)
@@ -293,6 +306,11 @@ function checkCode(code, secret) {
   }
 }
 
-function getCss(){
+/**
+ * Retrieves the CSS content from the "stylesheet.html" file.
+ *
+ * @return {string} The content of the CSS file.
+ */
+function getCss() {
   return HtmlService.createHtmlOutputFromFile("stylesheet.html").getContent();
 }
