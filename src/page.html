@@ -21,14 +21,14 @@
             <label for="">Télèphone mobile</label><i>ex: +33607060706</i>
          </div>
          <div class="input-data">
-            <input type="text" id="firstNameInput" pattern="^[a-zA-Z]{5,}$" required>
+            <input type="text" id="firstNameInput" minlength="3" required>
             <div class="underline"></div>
             <label for="">Prénom</label> <i>ex: Sylvain</i>
          </div>
       </div>
       <div class="form-row">
          <div class="input-data">
-            <input type="text" id="lastNameInput" pattern="^[a-zA-Z]{5,}$" required>
+            <input type="text" id="lastNameInput" minlength="3" required>
             <div class="underline"></div>
             <label for="">Nom</label> <i>ex: Dupiont</i>
          </div>
@@ -69,11 +69,11 @@
       },
       {
          id: "firstNameInput",
-         message: ['Saisir un prénom', 'lettres uniquement et taille > 5']
+         message: ['Saisir un prénom', 'lettres uniquement et taille > 2']
       },
       {
          id: "lastNameInput",
-         message: ['Saisir un nom', 'lettres uniquement et taille > 5']
+         message: ['Saisir un nom', 'lettres uniquement et taille > 2']
       },
    ]
 
