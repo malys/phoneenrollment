@@ -16,9 +16,9 @@
       <p>Merci de remplir le formulaire.</p>
       <div class="form-row">
          <div class="input-data">
-            <input type="tel" id="phoneInput" pattern="^\+33[0-9]{9}" required>
+            <input type="tel" id="phoneInput" pattern="^(\+33|0)[0-9]{9}" required>
             <div class="underline"></div>
-            <label for="">Télèphone mobile</label><i>ex: +33607060706</i>
+            <label for="">Télèphone mobile</label><i>ex: 0607060706</i>
          </div>
          <div class="input-data">
             <input type="text" id="firstNameInput" minlength="3" required>
@@ -38,24 +38,23 @@
             <label for="">Code sécurité</label><i>Nom du village du terrain</i>
          </div>
       </div>
-      <div class="form-row">
+
+      <div class="form-row submit-btn">
          <div class="input-data">
-            <div class="form-row submit-btn">
-               <div class="input-data">
-                  <div class="inner"></div>
-                  <input id="submitButton" type="submit" value="Inscription">
-               </div>
-               <div class="input-data">
-                  <div class="inner"></div>
-                  <input id="removeButton" type="submit" value="Désinscription">
-               </div>
-            </div>
-            <div class="form-popup" id="okForm" style="display:none">
-               <p>Votre demande a bien été prise en compte.</p>
-            </div>
-            <div class="form-popup" id="koForm" style="display:none">
-               <p>Le formulaire est invalide.</p>
-            </div>
+            <div class="inner"></div>
+            <input id="submitButton" type="submit" value="Inscription">
+         </div>
+         <div class="input-data">
+            <div class="inner"></div>
+            <input id="removeButton" type="submit" value="Désinscription">
+         </div>
+      </div>
+      <div class="form-popup" id="okForm" style="display:none">
+         <p>Votre demande a bien été prise en compte.</p>
+      </div>
+      <div class="form-popup" id="koForm" style="display:none">
+         <p>Le formulaire est invalide.</p>
+      </div>
    </form>
 </div>
 
@@ -65,7 +64,7 @@
    const FIELDS = [
       {
          id: "phoneInput",
-         message: ['Saisir un numéro de télèphone!', 'Saisir un numéro de télèphone: +33607060706']
+         message: ['Saisir un numéro de télèphone!', 'Saisir un numéro de télèphone au bon format: ex 0607060706']
       },
       {
          id: "firstNameInput",
@@ -116,6 +115,9 @@
          var lastName = document.getElementById('lastNameInput').value;
          var code = document.getElementById('codeInput').value;
          // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+         if (phoneNumber.toString().startsWith('0')) {
+            phoneNumber = '+33' + phoneNumber.toString().substring(1)
+         }
          if (phoneNumber && phoneNumber.toString().startsWith('+33') && code) {
             google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber.trim(), firstName.trim(), lastName.trim(), code.trim());
             clean();
