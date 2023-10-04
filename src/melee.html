@@ -3,32 +3,54 @@
 
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="stylesheet.html">
-
     <title>Définir des équipes de joueurs</title>
     <script>
-        function teamCompute(nbJoueurs, teamList) {
-            let restDoublette = nbJoueurs % 4;
-            let restTriplette = nbJoueurs % 6;
-            if (restDoublette === 0 || (restDoublette !== 0 && (restDoublette === 1 || restDoublette === 3))) {
-                teamList.push({ size: 2, nb: Math.floor(nbJoueurs / 4) * 2 });
-                if (restDoublette <= 3) teamList.push({ size: restDoublette, nb: 1 })
-            } else if (restTriplette === 0 || restTriplette > 2) {
-                teamList.push({ size: 3, nb: Math.floor(nbJoueurs / 6) * 2 });
-                if (restTriplette === 3) {
-                    teamList.push({ size: 3, nb: 1 });
+    function teamCompute(nbJoueurs, teamList) {
+        let restDoublette = nbJoueurs % 4;
+        let restTriplette = nbJoueurs % 6;
+
+        const refs = [
+            {
+                name: 'Doublette',
+                condition: (restDoublette, restTriplette) => restDoublette === 0 || restDoublette === 1 || restDoublette === 3,
+                action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                    teamList.push({ size: 2, nb: Math.floor(nbJoueurs / 4) * 2 });
+                    if (restDoublette <= 3) teamList.push({ size: restDoublette, nb: 1 })
                 }
-            } else if (restDoublette === restTriplette) {
-                teamList = teamCompute(Math.floor(nbJoueurs / 2), teamList);
-                teamList = teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
+            }, {
+                name: 'Triplette',
+                condition: (restDoublette, restTriplette) => restTriplette === 0 || restTriplette > 2,
+                action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                    teamList.push({ size: 3, nb: Math.floor(nbJoueurs / 6) * 2 });
+                    if (restTriplette === 3) {
+                        teamList.push({ size: 3, nb: 1 });
+                    }
+                }
+            }, {
+                name: 'Autre',
+                condition: (restDoublette, restTriplette) => restDoublette === restTriplette,
+                action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                    teamList = teamCompute(Math.floor(nbJoueurs / 2), teamList);
+                    teamList = teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
+                }
             }
-            const notAttributed = nbJoueurs - teamList.reduce((a, b) => a + b.size * b.nb, 0);
-            if (notAttributed > 0) {
-                teamList = teamCompute(notAttributed, teamList);
-            }
-            return teamList
+        ]
+        let conditions = []
+        if (Math.floor(nbJoueurs / 4) > 3) {
+            conditions.push(refs[1])
+            conditions.push(refs[0])
+            conditions.push(refs[2])
+        } else {
+            conditions = refs
         }
-        function populate(nbJoueurs, equipes) {
+        conditions.find(f => f.condition(restDoublette, restTriplette) === true).action(restDoublette, restTriplette, teamList, nbJoueurs);
+
+        const notAttributed = nbJoueurs - teamList.reduce((a, b) => a + b.size * b.nb, 0);
+        if (notAttributed > 0) {
+            teamList = teamCompute(notAttributed, teamList);
+        }
+        return teamList
+    }        function populate(nbJoueurs, equipes) {
             // Récupérer le nombre de joueurs initial
             let teamList = teamCompute(nbJoueurs, []);
             //console.log(teamList)
@@ -75,7 +97,7 @@
         <div class="text">
             Tirage pour la pétanque
         </div>
-        <form action="#">
+        <form>
             <div class="form-row">
                 <div class="input-data">
                     <input type="number" id="nbJoueurs" min="0" required>
