@@ -105,45 +105,38 @@
       })
    }
 
+   function submitButtons(id, action) {
+      document.getElementById(id).addEventListener('click', function () {
+         if (FIELDS.map(m => document.getElementById(m.id).checkValidity()).every(e => e == true)) {
+            // Get the value from the `phoneInput` text box.
+            var phoneNumber = document.getElementById('phoneInput').value;
+            var firstName = document.getElementById('firstNameInput').value;
+            var lastName = document.getElementById('lastNameInput').value;
+            var code = document.getElementById('codeInput').value;
+            // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
+            if (phoneNumber.toString().startsWith('0')) {
+               phoneNumber = '+33' + phoneNumber.toString().substring(1)
+            }
+            if (phoneNumber && phoneNumber.toString().startsWith('+33') && code) {
+               action(phoneNumber.trim(), firstName.trim(), lastName.trim(), code.trim())
+               clean();
+            } else {
+               document.getElementById("koForm").style.display = "block";
+            }
+         }
+
+      });
+
+   }
+
    validity()
 
-   document.getElementById('submitButton').addEventListener('click', function () {
-      if (FIELDS.map(m => document.getElementById(m.id).checkValidity()).every(e => e == true)) {
-         // Get the value from the `phoneInput` text box.
-         var phoneNumber = document.getElementById('phoneInput').value;
-         var firstName = document.getElementById('firstNameInput').value;
-         var lastName = document.getElementById('lastNameInput').value;
-         var code = document.getElementById('codeInput').value;
-         // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
-         if (phoneNumber.toString().startsWith('0')) {
-            phoneNumber = '+33' + phoneNumber.toString().substring(1)
-         }
-         if (phoneNumber && phoneNumber.toString().startsWith('+33') && code) {
-            google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber.trim(), firstName.trim(), lastName.trim(), code.trim());
-            clean();
-         } else {
-            document.getElementById("koForm").style.display = "block";
-         }
-      }
+   submitButtons('submitButton',
+      (phoneNumber, firstName, lastName, code) => google.script.run.withFailureHandler(() => console.log("Something went wrong")).userClicked(phoneNumber.trim(), firstName.trim(), lastName.trim(), code.trim()))
 
-   });
+   submitButtons('removeButton',
+      (phoneNumber, firstName, lastName, code) => google.script.run.userRemoved(phoneNumber.trim(), code.trim()))
 
-   document.getElementById('removeButton').addEventListener('click', function () {
-
-      if (FIELDS.map(m => document.getElementById(m.id).checkValidity()).every(e => e == true)) {
-         // Get the value from the `phoneInput` text box.
-         // Get the value from the `phoneInput` text box.
-         var phoneNumber = document.getElementById('phoneInput').value;
-         var code = document.getElementById('codeInput').value
-         // Run the Apps Script `userClicked` function passing the `phoneNumber` input.
-         if (phoneNumber && code) {
-            google.script.run.userRemoved(phoneNumber.trim(), code.trim());
-            clean();
-         } else {
-            document.getElementById("koForm").style.display = "block";
-         }
-      }
-   });
 </script>
 
 </html>
