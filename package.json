@@ -10,7 +10,8 @@
     "deploy": "deploy.sh",
     "prod": "C:\\tools\\nyagos\\nyagos.exe -c open \"https://script.google.com/macros/s/AKfycbzQ1W7YoEOI3ZxGGXXXvovurBndaJFoL2b7oIrC-LYi8JQsCrAyk3PmGUu6dL_jKP-dIw/exec\" && C:\\tools\\nyagos\\nyagos.exe -c open  \"https://s.42l.fr/petanque\"",
     "dev": "C:\\tools\\nyagos\\nyagos.exe -c open \"https://script.google.com/home/projects/1b6qLI4OJWJXgjqwWoW6F602OV-PwOO-1Xi9GtYMF0ca853MZAcVaG_D-/edit\"",
-    "test": "C:\\tools\\nyagos\\nyagos.exe -c open \"https://script.google.com/macros/s/AKfycbx2v2hW4r8xU-6VpiHjhn_vmoGcrEZVQaM33CCYaE6F/dev\""
+    "test": "C:\\tools\\nyagos\\nyagos.exe -c open \"https://script.google.com/macros/s/AKfycbx2v2hW4r8xU-6VpiHjhn_vmoGcrEZVQaM33CCYaE6F/dev\"",
+    "admin": "C:\\tools\\nyagos\\nyagos.exe -c open \"https://script.google.com/macros/s/AKfycbzaB0otFaArjsIeVq1bJRwApxuKh3P22mrVkp9khHasjoVCW08ZOT2E6I8AWo5assLWJw/exec\""
   },
   "author": "malys",
   "license": "ISC"
