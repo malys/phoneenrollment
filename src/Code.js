@@ -27,18 +27,25 @@ const gc = bmSimpleCrypto.GasCrypt;
  * @return {Content} - The HTTP response content.
  */
 function doGet(e) {
+  Logger.log(e.pathInfo)
   // Check if the request contains the 'json' parameter
-  if (e && e.parameters && e.parameters.json) {
-    // Retrieve user data
-    var content = getUsers();
+  if (e && e.parameters) {
+    if (e.parameters.json) {
+      // Retrieve user data
+      var content = getUsers();
 
-    // Create and return a JSON response
-    return ContentService.createTextOutput(content)
-      .setMimeType(ContentService.MimeType.JSON);
+      // Create and return a JSON response
+      return ContentService.createTextOutput(content)
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (e.parameters.secret && e.parameters.message) {
+      let message = getMessage(e.parameters.secret, convert(e.parameters.message))
+      return ContentService.createTextOutput(message).setMimeType(ContentService.MimeType.JSON);
+    }
   }
-  else if (e && e.parameters && e.parameters.secret && e.parameters.message) {
-    let message = getMessage(e.parameters.secret, convert(e.parameters.message))
-    return ContentService.createTextOutput(message).setMimeType(ContentService.MimeType.JSON);
+  if (e && e.pathInfo && e.pathInfo === "melee") {
+    // Render the 'melee.html' template
+    return HtmlService.createTemplateFromFile('melee.html').evaluate();
   }
   else {
     // Render the 'page.html' template
