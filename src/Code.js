@@ -321,3 +321,19 @@ function checkCode(code, secret) {
 function getCss() {
   return HtmlService.createHtmlOutputFromFile("stylesheet.html").getContent();
 }
+
+/**
+ * Handles the HTTP POST request for the web app.
+ *
+ * @param {Object} e - The event object containing the request parameters.
+ * @return {Content} - The HTTP response content.
+ */
+function doPost(e) {
+  let sms = JSON.parse(e.postData.contents);
+  var spreadsheet = SpreadsheetApp.openByUrl(SHEET_URL);
+  var sheet = spreadsheet.getSheets()[1]; //logs
+  sheet.appendRow([sms.sentStamp, sms.receivedStamp, sms.from, sms.text,sms.sim]);
+  return ContentService
+    .createTextOutput(JSON.stringify({}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
