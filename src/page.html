@@ -12,8 +12,11 @@
 
    </div>
    <form action="#">
-      <p>Si vous voulez être informé quand aura lieu la prochaine partie.</p>
-      <p>Merci de remplir le formulaire.</p>
+      <p>Ayant atteint la limite de joueurs, nous ne pouvons plus accepter de nouveaux participants.</p>
+      <p>Ce formulaire est donc réservé aux personnes déjà inscrites.</p>
+      <p>Si vous n'êtes plus intéressés par nos rendez-vous pétanque, pensez à vous désinscrire.</p>
+      <!--<p>Si vous voulez être informé quand aura lieu la prochaine partie.</p>
+      <p>Merci de remplir le formulaire.</p>-->
       <div class="form-row">
          <div class="input-data">
             <input type="tel" id="phoneInput" pattern="^(\+33|0)[0-9]{9}" required>
@@ -56,7 +59,8 @@
          <p>Le formulaire est invalide.</p>
       </div>
    </form>
-   <a href="<?!= ScriptApp.getService().getUrl(); ?>/melee" style="font-size: 7px;color: #eed4d4;">Mélée</a>
+   <a href="<?!= ScriptApp.getService().getUrl(); ?>/melee" style="font-size: 10px;color: #eed4d4;">Mélée</a>
+   <a href="<?!= ScriptApp.getService().getUrl(); ?>/freeusers" style="font-size: 10px;color: #eed4d4;">Participants</a>
 </div>
 
 
