@@ -202,18 +202,35 @@ function getLogs() {
   // Create an empty array to store the user data
   var result = [];
 
+
+  //Remove duplicate entry
+  values = values.filter((value, index) => {
+    const _value = JSON.stringify(value);
+    return index === values.findIndex(obj => {
+      return JSON.stringify(obj) === _value;
+    });
+  });
+
   // Loop through each row starting from the second row
   for (var row = 1; row < values.length; row++) {
     // Extract the phone number, first name, and last name from the values
     let phone = parseInt(values[row][2]);
     let message = values[row][3];
-    // Create a user object and add it to the result array
-    var logs = {
-      phone: phone,
-      message: message
-    };
-    result.push(logs);
+
+    let entry = result.find(f => f.phone === phone)
+    if (entry) {
+      //Concatenate messages
+      entry.message = entry.message + ' ' + message
+    } else {
+      // Create a user object and add it to the result array
+      var logs = {
+        phone: phone,
+        message: message
+      };
+      result.push(logs);
+    }
   }
+
   Logger.log(result);
   return result
 
@@ -228,13 +245,13 @@ function countFreeUsers() {
   let list = getUsers(1).map(m => m.phone)
   let logs = getLogs().filter(f => list.includes(f.phone))
 
-  let answers = [...new Set(logs.map(m => m.phone))]
-  let notFree = [...new Set(logs.filter(f => {
-    return f.message && typeof f.message === "string" &&
-      (f.message.indexOf('0') > -1 || f.message.indexOf('pas') > -1 || f.message.indexOf('non') > -1)
-  }).map(m => m.phone))]
+  let answers = logs.map(m => m.phone)
+  let notFree = logs.filter(f => {
+    let mes = String(f.message)
+    return mes && (mes.indexOf('0') > -1 || mes.indexOf('pas') > -1 || mes.indexOf('non') > -1)
+  }).map(m => m.phone)
 
-  let result = answers.length - notFree.length + 2
+  let result = answers.length - notFree.length + 1
   Logger.log(answers);
   Logger.log(notFree);
   return result
