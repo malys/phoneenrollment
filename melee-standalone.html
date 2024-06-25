@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+<style>
+
+  * {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 10px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(115deg, #56d8e4 10%, #9f01ea 90%);
+  }
+
+  .container {
+    max-width: 800px;
+    background: #fff;
+    width: 800px;
+    padding: 25px 40px 10px 40px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .container .text {
+    text-align: center;
+    font-size: 41px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .container form {
+    padding: 30px 0 0 0;
+  }
+
+  .container form .form-row {
+    display: flex;
+    margin: 32px 0;
+  }
+
+  form .form-row .input-data {
+    width: 100%;
+    height: 40px;
+    margin: 0 20px;
+    position: relative;
+  }
+
+  form .form-row .textarea {
+    height: 70px;
+  }
+
+  .form-popup {
+   font-size: 25px;
+    color: #b10c00;
+    font-weight: bold;
+  }
+
+  .input-data input,
+  .textarea textarea {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    font-size: 17px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.12);
+  }
+
+  .input-data input:focus~label,
+  .textarea textarea:focus~label,
+  .input-data input:valid~label,
+  .textarea textarea:valid~label {
+    transform: translateY(-20px);
+    font-size: 14px;
+    color: #3498db;
+  }
+
+  .textarea textarea {
+    resize: none;
+    padding-top: 10px;
+  }
+
+  .input-data label {
+    position: absolute;
+    pointer-events: none;
+    bottom: 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .textarea label {
+    width: 100%;
+    bottom: 40px;
+    background: #fff;
+  }
+
+  .input-data .underline {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+  }
+
+  .input-data .underline:before {
+    position: absolute;
+    content: "";
+    height: 2px;
+    width: 100%;
+    background: #3498db;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease;
+  }
+
+  .input-data input:focus~.underline:before,
+  .input-data input:valid~.underline:before,
+  .textarea textarea:focus~.underline:before,
+  .textarea textarea:valid~.underline:before {
+    transform: scale(1);
+  }
+
+  .submit-btn .input-data {
+    overflow: hidden;
+    height: 45px !important;
+  }
+
+  .submit-btn .input-data .inner {
+    height: 100%;
+    width: 300%;
+    position: absolute;
+    left: -100%;
+    background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
+    transition: all 0.4s;
+  }
+
+  .submit-btn .input-data:hover .inner {
+    left: 0;
+  }
+
+  .submit-btn .input-data input {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (max-width: 700px) {
+    .container .text {
+      font-size: 30px;
+    }
+
+    .container form {
+      padding: 10px 0 0 0;
+    }
+
+    .container form .form-row {
+      display: block;
+    }
+
+    form .form-row .input-data {
+      margin: 35px 0 !important;
+    }
+
+</style>    <title>Définir des équipes de joueurs</title>
+    <script>
+        function teamCompute(nbJoueurs, teamList) {
+            let restDoublette = nbJoueurs % 4;
+            let restTriplette = nbJoueurs % 6;
+
+            const refs = [
+                {
+                    name: 'Doublette',
+                    condition: (restDoublette, restTriplette) => restDoublette === 0 || restDoublette === 1 || restDoublette === 3,
+                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                        teamList.push({ size: 2, nb: Math.floor(nbJoueurs / 4) * 2 });
+                        if (restDoublette <= 3) teamList.push({ size: restDoublette, nb: 1 })
+                    }
+                }, {
+                    name: 'Triplette',
+                    condition: (restDoublette, restTriplette) => restTriplette === 0 || restTriplette > 2,
+                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                        teamList.push({ size: 3, nb: Math.floor(nbJoueurs / 6) * 2 });
+                        if (restTriplette === 3) {
+                            teamList.push({ size: 3, nb: 1 });
+                        }
+                    }
+                }, {
+                    name: 'Autre',
+                    condition: (restDoublette, restTriplette) => restDoublette === restTriplette,
+                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                        teamList = teamCompute(Math.floor(nbJoueurs / 2), teamList);
+                        teamList = teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
+                    }
+                }
+            ]
+            let conditions = []
+            if (Math.floor(nbJoueurs / 4) > 3) {
+                conditions.push(refs[1])
+                conditions.push(refs[0])
+                conditions.push(refs[2])
+            } else {
+                conditions = refs
+            }
+            conditions.find(f => f.condition(restDoublette, restTriplette) === true).action(restDoublette, restTriplette, teamList, nbJoueurs);
+
+            const notAttributed = nbJoueurs - teamList.reduce((a, b) => a + b.size * b.nb, 0);
+            if (notAttributed > 0) {
+                teamList = teamCompute(notAttributed, teamList);
+            }
+            return teamList
+        } function populate(nbJoueurs, equipes) {
+            // Récupérer le nombre de joueurs initial
+            let teamList = teamCompute(nbJoueurs, []);
+            //console.log(teamList)
+            let listPlayers = Array.from({ length: nbJoueurs }, (_, i) => i + 1).sort(s => Math.random() - 0.5);
+
+            for (let index = 0; index < teamList.length; index++) {
+                const t = teamList[index];
+                for (let j = 0; j < t.nb; j++) {
+                    equipes.push(listPlayers.splice(0, t.size));
+                }
+
+            }
+
+            return equipes.filter(f => f.length > 0).sort((a, b) => b.length - a.length);
+        }
+
+        function definirEquipes() {
+            // Récupérer le nombre de joueurs initial
+            const result = populate(parseInt(document.getElementById('nbJoueurs').value, 10), []);
+
+            // Afficher les équipes dans la page
+            const resultat = document.getElementById('resultat');
+            resultat.innerHTML = '';
+            display(result.filter(f => f.length === 2));
+            display(result.filter(f => f.length !== 2));
+        }
+        function display(equipes) {
+            for (let i = 0; i < Math.floor(equipes.length / 2); i++) {
+                const equipe = document.createElement('p');
+                equipe.textContent = `${equipes[2 * i].join(', ')}  >  ${equipes[2 * i + 1].join(', ')}`;
+                resultat.appendChild(equipe);
+            }
+            if (equipes.length % 2 == 1) {
+                const equipe = document.createElement('p');
+                equipe.textContent = `${equipes[equipes.length - 1].join(', ')}`;
+                resultat.appendChild(equipe);
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="text">
+            Tirage pour la pétanque
+        </div>
+        <form onsubmit="return false;">
+            <div class="form-row">
+                <div class="input-data">
+                    <input type="number" id="nbJoueurs" min="0" required>
+                    <div class="underline"></div>
+                    <label for="nbJoueurs">Nombre de joueurs initial:</label>
+                </div>
+            </div>
+            <div class="form-row submit-btn">
+                <button onclick="definirEquipes()">Définir les équipes</button>
+            </div>
+            <div class="form-popup" id="resultat"></div>
+        </form>
+    </div>
+</body>
+
+</html>
+<!-- all rights reserved to "@malys" -->

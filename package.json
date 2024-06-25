@@ -12,7 +12,8 @@
     "dev": "open-cli \"https://script.google.com/home/projects/1b6qLI4OJWJXgjqwWoW6F602OV-PwOO-1Xi9GtYMF0ca853MZAcVaG_D-/edit\"",
     "test": "open-cli \"https://script.google.com/macros/s/AKfycbx2v2hW4r8xU-6VpiHjhn_vmoGcrEZVQaM33CCYaE6F/dev\"",
     "admin": "open-cli \"https://script.google.com/macros/s/AKfycbzaB0otFaArjsIeVq1bJRwApxuKh3P22mrVkp9khHasjoVCW08ZOT2E6I8AWo5assLWJw/exec\"",
-    "hook": "curl \"https://script.google.com/macros/s/AKfycbzQ1W7YoEOI3ZxGGXXXvovurBndaJFoL2b7oIrC-LYi8JQsCrAyk3PmGUu6dL_jKP-dIw/exec\" -H \"content-type: application/json; charset=utf-8\" -d \"{\\\"from\\\":\\\"1234567890\\\",\\\"text\\\": \\\"Test\\\"}\" -vvv"
+    "hook": "curl \"https://script.google.com/macros/s/AKfycbzQ1W7YoEOI3ZxGGXXXvovurBndaJFoL2b7oIrC-LYi8JQsCrAyk3PmGUu6dL_jKP-dIw/exec\" -H \"content-type: application/json; charset=utf-8\" -d \"{\\\"from\\\":\\\"1234567890\\\",\\\"text\\\": \\\"Test\\\"}\" -vvv",
+    "offline": "xonsh offline.xsh"
   },
   "author": "malys",
   "license": "ISC"
