@@ -1,0 +1,2 @@
+source $XONSH_CONFIG_DIR/clasp.xsh
+switchProfile("malystraining")
