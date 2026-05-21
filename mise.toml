@@ -1,0 +1,48 @@
+[tools]
+node = "lts"
+"npm:@google/clasp" = "latest"
+"npm:open-cli" = "latest"
+
+[tasks.install]
+run="xonsh .autoxsh"
+
+
+[tasks.publish]
+run="xonsh deploy.xsh"
+[tasks.dev]
+run="clasp open-script"
+[tasks.test]
+run="node src/Business.js"
+
+[tasks.pull]
+description = "Pull latest code from Google Apps Script"
+run = "clasp pull"
+
+[tasks.push]
+description = "Push code to Google Apps Script"
+run = "clasp push"
+
+
+[tasks.prod]
+description = "Open production URLs"
+run = [
+  "clasp open-web-app",
+  "open-cli \"https://s.42l.fr/petanque\"",
+]
+
+[tasks.admin]
+description = "Open admin deployment URL"
+run = "open-cli \"https://script.google.com/macros/s/AKfycbzaB0otFaArjsIeVq1bJRwApxuKh3P22mrVkp9khHasjoVCW08ZOT2E6I8AWo5assLWJw/exec\""
+
+[tasks.hook]
+description = "Send test webhook payload to production"
+run = """
+curl "https://script.google.com/macros/s/AKfycbzQ1W7YoEOI3ZxGGXXXvovurBndaJFoL2b7oIrC-LYi8JQsCrAyk3PmGUu6dL_jKP-dIw/exec" \
+  -H "content-type: application/json; charset=utf-8" \
+  -d "{\"from\":\"1234567890\",\"text\": \"Test\"}" \
+  -vvv
+"""
+
+[tasks.offline]
+description = "Run offline script"
+run = "xonsh offline.xsh"

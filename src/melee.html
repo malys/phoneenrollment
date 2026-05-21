@@ -3,92 +3,145 @@
 
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <?!= HtmlService.createHtmlOutputFromFile('stylesheet.html').getContent(); ?>
     <title>Définir des équipes de joueurs</title>
     <script>
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
         function teamCompute(nbJoueurs, teamList) {
-            let restDoublette = nbJoueurs % 4;
-            let restTriplette = nbJoueurs % 6;
+            const restDoublette = nbJoueurs % 4;
+            const restTriplette = nbJoueurs % 6;
 
             const refs = [
                 {
                     name: 'Doublette',
-                    condition: (restDoublette, restTriplette) => restDoublette === 0 || restDoublette === 1 || restDoublette === 3,
-                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                    condition: () => restDoublette === 0 || restDoublette === 1 || restDoublette === 3,
+                    action: () => {
                         teamList.push({ size: 2, nb: Math.floor(nbJoueurs / 4) * 2 });
-                        if (restDoublette <= 3) teamList.push({ size: restDoublette, nb: 1 })
+                        if (restDoublette > 0) teamList.push({ size: restDoublette, nb: 1 });
                     }
                 }, {
                     name: 'Triplette',
-                    condition: (restDoublette, restTriplette) => restTriplette === 0 || restTriplette > 2,
-                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
+                    condition: () => restTriplette === 0 || restTriplette > 2,
+                    action: () => {
                         teamList.push({ size: 3, nb: Math.floor(nbJoueurs / 6) * 2 });
-                        if (restTriplette === 3) {
-                            teamList.push({ size: 3, nb: 1 });
-                        }
+                        if (restTriplette === 3) teamList.push({ size: 3, nb: 1 });
                     }
                 }, {
                     name: 'Autre',
-                    condition: (restDoublette, restTriplette) => restDoublette === restTriplette,
-                    action: (restDoublette, restTriplette, teamList, nbJoueurs) => {
-                        teamList = teamCompute(Math.floor(nbJoueurs / 2), teamList);
-                        teamList = teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
+                    condition: () => true,
+                    action: () => {
+                        teamCompute(Math.floor(nbJoueurs / 2), teamList);
+                        teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
                     }
                 }
-            ]
-            let conditions = []
-            if (Math.floor(nbJoueurs / 4) > 3) {
-                conditions.push(refs[1])
-                conditions.push(refs[0])
-                conditions.push(refs[2])
-            } else {
-                conditions = refs
-            }
-            conditions.find(f => f.condition(restDoublette, restTriplette) === true).action(restDoublette, restTriplette, teamList, nbJoueurs);
+            ];
+
+            const conditions = Math.floor(nbJoueurs / 4) > 3
+                ? [refs[1], refs[0], refs[2]]
+                : refs;
+            conditions.find(f => f.condition()).action();
 
             const notAttributed = nbJoueurs - teamList.reduce((a, b) => a + b.size * b.nb, 0);
-            if (notAttributed > 0) {
-                teamList = teamCompute(notAttributed, teamList);
-            }
-            return teamList
-        } function populate(nbJoueurs, equipes) {
-            // Récupérer le nombre de joueurs initial
-            let teamList = teamCompute(nbJoueurs, []);
-            //console.log(teamList)
-            let listPlayers = Array.from({ length: nbJoueurs }, (_, i) => i + 1).sort(s => Math.random() - 0.5);
+            if (notAttributed > 0) teamCompute(notAttributed, teamList);
+            return teamList;
+        }
 
-            for (let index = 0; index < teamList.length; index++) {
-                const t = teamList[index];
+        function populate(nbJoueurs) {
+            const teamList = teamCompute(nbJoueurs, []);
+            const listPlayers = shuffle(Array.from({ length: nbJoueurs }, (_, i) => i + 1));
+            const equipes = [];
+
+            for (const t of teamList) {
                 for (let j = 0; j < t.nb; j++) {
-                    equipes.push(listPlayers.splice(0, t.size));
+                    if (t.size > 0) equipes.push(listPlayers.splice(0, t.size));
                 }
-
             }
 
-            return equipes.filter(f => f.length > 0).sort((a, b) => b.length - a.length);
+            const teams = equipes.filter(f => f.length > 0);
+            while (true) {
+                const loneIdx = teams.findIndex(t => t.length === 1);
+                if (loneIdx === -1) break;
+                const doubletteIdx = teams.findIndex(t => t.length === 2);
+                if (doubletteIdx === -1) break;
+                teams[doubletteIdx] = [...teams[doubletteIdx], ...teams[loneIdx]];
+                teams.splice(loneIdx, 1);
+            }
+            return teams.sort((a, b) => b.length - a.length);
         }
 
         function definirEquipes() {
-            // Récupérer le nombre de joueurs initial
-            const result = populate(parseInt(document.getElementById('nbJoueurs').value, 10), []);
-
-            // Afficher les équipes dans la page
             const resultat = document.getElementById('resultat');
             resultat.innerHTML = '';
-            display(result.filter(f => f.length === 2));
-            display(result.filter(f => f.length !== 2));
+            const nbJoueurs = parseInt(document.getElementById('nbJoueurs').value, 10);
+
+            if (!Number.isFinite(nbJoueurs) || nbJoueurs < 2) {
+                const err = document.createElement('p');
+                err.className = 'error';
+                err.textContent = 'Saisir au moins 2 joueurs.';
+                resultat.appendChild(err);
+                return;
+            }
+
+            const equipes = populate(nbJoueurs);
+            const doublettes = equipes.filter(e => e.length === 2);
+            const autres = equipes.filter(e => e.length !== 2);
+            renderMatchups(resultat, doublettes, autres);
         }
-        function display(equipes) {
-            for (let i = 0; i < Math.floor(equipes.length / 2); i++) {
-                const equipe = document.createElement('p');
-                equipe.textContent = `${equipes[2 * i].join(', ')}  >  ${equipes[2 * i + 1].join(', ')}`;
-                resultat.appendChild(equipe);
+
+        function renderMatchups(container, doublettes, autres) {
+            const doublettePairs = Math.floor(doublettes.length / 2);
+            for (let i = 0; i < doublettePairs; i++) {
+                container.appendChild(makeMatch(doublettes[2 * i], doublettes[2 * i + 1]));
             }
-            if (equipes.length % 2 == 1) {
-                const equipe = document.createElement('p');
-                equipe.textContent = `${equipes[equipes.length - 1].join(', ')}`;
-                resultat.appendChild(equipe);
+            const autresPairs = Math.floor(autres.length / 2);
+            for (let i = 0; i < autresPairs; i++) {
+                container.appendChild(makeMatch(autres[2 * i], autres[2 * i + 1]));
             }
+            const loneDoublette = doublettes.length % 2 === 1 ? doublettes[doublettes.length - 1] : null;
+            const loneAutre = autres.length % 2 === 1 ? autres[autres.length - 1] : null;
+            if (loneDoublette && loneAutre) {
+                container.appendChild(makeMatch(loneDoublette, loneAutre));
+            } else if (loneDoublette) {
+                container.appendChild(makeMatch(loneDoublette, null));
+            } else if (loneAutre) {
+                container.appendChild(makeMatch(loneAutre, null));
+            }
+        }
+
+        function makeMatch(teamA, teamB) {
+            const match = document.createElement('div');
+            match.className = 'match';
+            match.appendChild(makeTeam(teamA));
+            if (teamB) {
+                const vs = document.createElement('span');
+                vs.className = 'vs';
+                vs.textContent = 'VS';
+                match.appendChild(vs);
+                match.appendChild(makeTeam(teamB));
+            } else {
+                match.classList.add('match-lone');
+            }
+            return match;
+        }
+
+        function makeTeam(players) {
+            const team = document.createElement('div');
+            team.className = `team team-${players.length}`;
+            for (const p of players) {
+                const chip = document.createElement('span');
+                chip.className = 'player';
+                chip.textContent = p;
+                team.appendChild(chip);
+            }
+            return team;
         }
     </script>
 </head>
@@ -98,16 +151,16 @@
         <div class="text">
             Tirage pour la pétanque
         </div>
-        <form onsubmit="return false;">
+        <form onsubmit="definirEquipes(); return false;">
             <div class="form-row">
                 <div class="input-data">
-                    <input type="number" id="nbJoueurs" min="0" required>
+                    <input type="number" id="nbJoueurs" min="2" required>
                     <div class="underline"></div>
                     <label for="nbJoueurs">Nombre de joueurs initial:</label>
                 </div>
             </div>
             <div class="form-row submit-btn">
-                <button onclick="definirEquipes()">Définir les équipes</button>
+                <button type="submit" class="btn-primary">Définir les équipes</button>
             </div>
             <div class="form-popup" id="resultat"></div>
         </form>
