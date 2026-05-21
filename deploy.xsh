@@ -25,7 +25,6 @@ if len(list)>=1:
             clasp undeploy @(id)  
     description="Refresh: " + main
     print(description)    
-    clasp push
     clasp deploy --deploymentId @(main) -d @(description)
 else:
     cliResult=$(clasp deploy -d "new deployment")
