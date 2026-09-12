@@ -262,74 +262,68 @@
   }
 </style>    <title>Définir des équipes de joueurs</title>
     <script>
+        // Retourne un entier aléatoire uniforme dans [0, maxExclusive[.
+        // Utilise crypto.getRandomValues (CSPRNG) avec rejection sampling pour
+        // éviter le biais de modulo, avec repli sur Math.random si indisponible.
+        function secureRandomInt(maxExclusive) {
+            const cryptoObj = window.crypto;
+            if (cryptoObj && cryptoObj.getRandomValues) {
+                const total = 4294967296; // 2^32 valeurs possibles sur un Uint32
+                const limit = total - (total % maxExclusive);
+                const buf = new Uint32Array(1);
+                let value;
+                do {
+                    cryptoObj.getRandomValues(buf);
+                    value = buf[0];
+                } while (value >= limit);
+                return value % maxExclusive;
+            }
+            return Math.floor(Math.random() * maxExclusive);
+        }
+
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
+                const j = secureRandomInt(i + 1);
                 [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
 
-        function teamCompute(nbJoueurs, teamList) {
-            const restDoublette = nbJoueurs % 4;
-            const restTriplette = nbJoueurs % 6;
+        // Répartit les joueurs en doublettes et triplettes uniquement.
+        // Avec k équipes: triplettes = nbJoueurs - 2k et doublettes = 3k - nbJoueurs,
+        // valable pour ceil(nbJoueurs / 3) <= k <= floor(nbJoueurs / 2).
+        // On prend le plus grand k PAIR de cet intervalle:
+        //  - pair => toutes les équipes sont appariées, personne ne reste sur le banc,
+        //  - le plus grand => un maximum de doublettes, le format de base de la mêlée.
+        // Ex. 11 joueurs: k = 4 => 3 triplettes + 1 doublette (3v3 et 3v2).
+        // Si aucun k pair n'existe (2, 3 et 7 joueurs), on garde le plus grand k
+        // et une équipe attend le tour suivant.
+        function teamCompute(nbJoueurs) {
+            const kMin = Math.ceil(nbJoueurs / 3);
+            const kMax = Math.floor(nbJoueurs / 2);
 
-            const refs = [
-                {
-                    name: 'Doublette',
-                    condition: () => restDoublette === 0 || restDoublette === 1 || restDoublette === 3,
-                    action: () => {
-                        teamList.push({ size: 2, nb: Math.floor(nbJoueurs / 4) * 2 });
-                        if (restDoublette > 0) teamList.push({ size: restDoublette, nb: 1 });
-                    }
-                }, {
-                    name: 'Triplette',
-                    condition: () => restTriplette === 0 || restTriplette > 2,
-                    action: () => {
-                        teamList.push({ size: 3, nb: Math.floor(nbJoueurs / 6) * 2 });
-                        if (restTriplette === 3) teamList.push({ size: 3, nb: 1 });
-                    }
-                }, {
-                    name: 'Autre',
-                    condition: () => true,
-                    action: () => {
-                        teamCompute(Math.floor(nbJoueurs / 2), teamList);
-                        teamCompute(nbJoueurs - Math.floor(nbJoueurs / 2), teamList);
-                    }
+            let nbEquipes = kMax;
+            for (let k = kMax; k >= kMin; k--) {
+                if (k % 2 === 0) {
+                    nbEquipes = k;
+                    break;
                 }
-            ];
+            }
 
-            const conditions = Math.floor(nbJoueurs / 4) > 3
-                ? [refs[1], refs[0], refs[2]]
-                : refs;
-            conditions.find(f => f.condition()).action();
-
-            const notAttributed = nbJoueurs - teamList.reduce((a, b) => a + b.size * b.nb, 0);
-            if (notAttributed > 0) teamCompute(notAttributed, teamList);
-            return teamList;
+            return {
+                triplettes: nbJoueurs - 2 * nbEquipes,
+                doublettes: 3 * nbEquipes - nbJoueurs
+            };
         }
 
         function populate(nbJoueurs) {
-            const teamList = teamCompute(nbJoueurs, []);
+            const { triplettes, doublettes } = teamCompute(nbJoueurs);
             const listPlayers = shuffle(Array.from({ length: nbJoueurs }, (_, i) => i + 1));
-            const equipes = [];
+            const teams = [];
 
-            for (const t of teamList) {
-                for (let j = 0; j < t.nb; j++) {
-                    if (t.size > 0) equipes.push(listPlayers.splice(0, t.size));
-                }
-            }
-
-            const teams = equipes.filter(f => f.length > 0);
-            while (true) {
-                const loneIdx = teams.findIndex(t => t.length === 1);
-                if (loneIdx === -1) break;
-                const doubletteIdx = teams.findIndex(t => t.length === 2);
-                if (doubletteIdx === -1) break;
-                teams[doubletteIdx] = [...teams[doubletteIdx], ...teams[loneIdx]];
-                teams.splice(loneIdx, 1);
-            }
-            return teams.sort((a, b) => b.length - a.length);
+            for (let i = 0; i < triplettes; i++) teams.push(listPlayers.splice(0, 3));
+            for (let i = 0; i < doublettes; i++) teams.push(listPlayers.splice(0, 2));
+            return teams;
         }
 
         function definirEquipes() {
@@ -363,7 +357,8 @@
             const loneDoublette = doublettes.length % 2 === 1 ? doublettes[doublettes.length - 1] : null;
             const loneAutre = autres.length % 2 === 1 ? autres[autres.length - 1] : null;
             if (loneDoublette && loneAutre) {
-                container.appendChild(makeMatch(loneDoublette, loneAutre));
+                // Match déséquilibré (3 contre 2): la plus grosse équipe d'abord.
+                container.appendChild(makeMatch(loneAutre, loneDoublette));
             } else if (loneDoublette) {
                 container.appendChild(makeMatch(loneDoublette, null));
             } else if (loneAutre) {

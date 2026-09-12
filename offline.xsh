@@ -1,3 +1,6 @@
+import os
+
+
 def process_files(melee_path, stylesheet_path, output_path):
     # Read the contents of melee.html
     with open(melee_path, 'r') as melee_file:
@@ -26,6 +29,7 @@ def process_files(melee_path, stylesheet_path, output_path):
     output_content.append(html_footprint)
     
     # Write the output content to melee-standalone.html
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as output_file:
         output_file.writelines(output_content)
 
@@ -33,7 +37,7 @@ def process_files(melee_path, stylesheet_path, output_path):
 base_path="src/"
 melee_path = base_path+'melee.html'
 stylesheet_path =base_path+ 'stylesheet.html'
-output_path = 'melee-standalone.html'
+output_path = 'dist/index.html'
 
 # Process the files
 process_files(melee_path, stylesheet_path, output_path)
