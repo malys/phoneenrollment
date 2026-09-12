@@ -37,7 +37,7 @@ def process_files(melee_path, stylesheet_path, output_path):
 base_path="src/"
 melee_path = base_path+'melee.html'
 stylesheet_path =base_path+ 'stylesheet.html'
-output_path = 'dist/index.html'
+output_path = 'docs/index.html'
 
 # Process the files
 process_files(melee_path, stylesheet_path, output_path)
