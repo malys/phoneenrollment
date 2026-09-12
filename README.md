@@ -30,9 +30,5 @@ npm run prod
     Then click on the pencil icon at the top right to edit this deployment. Click on the "Version" dropbox and "New version", then "Deploy". This will update this version with your newest code and keep the same URL as you are not making a new deployment.
 
 
-### URLs
-
-*  [Shortlink Admin](https://s.42l.fr/petanque/admin/REDACTED-TOKEN?created=true) => melee
-
 
 
